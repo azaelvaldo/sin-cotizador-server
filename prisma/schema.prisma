@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  // Relation to password
+  password UserPassword?
+  // Relation to quote requests
+  quoteRequests Quotation[] @relation("QuotationRequest")
+}
+
+model UserPassword {
+  id        String   @id @default(uuid())
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relation to user (one-to-one)
+  userId String @unique
+  user   User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Quotation {
+  id                Int      @id @default(autoincrement())
+  clientName        String
+  cropId            Int
+  stateId           Int
+  insuredArea       Float
+  insuredAmount     Float
+  validityStart     DateTime
+  validityEnd       DateTime
+  status            String   @default("pending")
+  geofence          Json?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  createdBy         String
+  createdByUser     User?   @relation("QuotationRequest", fields: [createdBy], references: [id])
+  crop   Crop   @relation(fields: [cropId], references: [id])
+  state  State  @relation(fields: [stateId], references: [id])
+}
+
+model Crop {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+
+  quotations Quotation[]
+}
+
+model State {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+
+  quotations Quotation[]
+}
+
+
