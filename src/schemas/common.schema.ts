@@ -6,4 +6,5 @@ export const baseQuerySchema = z.object({
   page: z.coerce.number().int().min(0).default(0),
   pageSize: z.coerce.number().int().min(1).max(100).default(10),
   sortDirection: z.enum(['asc', 'desc']).default('desc'),
+  sortKey: z.string().optional(),
 });

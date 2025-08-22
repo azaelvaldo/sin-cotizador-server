@@ -36,7 +36,7 @@ model UserPassword {
 }
 
 model Quotation {
-  id                Int      @id @default(autoincrement())
+  id                String   @id @default(uuid())
   clientName        String
   cropId            Int
   stateId           Int

@@ -16,7 +16,7 @@ export const cropRoutes = [
       ],
     },
     handler: async (req: Hapi.Request, h: Hapi.ResponseToolkit) => {
-      const filters = req.query as any;
+      const filters = (req.app as any).validation?.query || {};
       const result = await cropService.getAllCrops(filters);
       return result;
     },

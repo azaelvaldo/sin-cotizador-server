@@ -16,7 +16,7 @@ export const stateRoutes = [
       ],
     },
     handler: async (req: Hapi.Request, h: Hapi.ResponseToolkit) => {
-      const filters = req.query as any;
+      const filters = (req.app as any).validation?.query || {};
       const result = await stateService.getAllStates(filters);
       return result;
     },

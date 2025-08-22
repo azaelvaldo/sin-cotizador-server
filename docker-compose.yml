@@ -11,6 +11,21 @@ services:
       - '5432:5432'
     volumes:
       - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: hapi_rabbitmq
+    ports:
+      - "5672:5672"   # AMQP port
+      - "15672:15672" # Web management panel http://localhost:15672
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    restart: unless-stopped
+
   adminer:
     image: adminer
     container_name: hapi_adminer
@@ -18,5 +33,8 @@ services:
       - '8080:8080'
     depends_on:
       - db
+    restart: unless-stopped
+
 volumes:
   pgdata:
+  rabbitmq_data:

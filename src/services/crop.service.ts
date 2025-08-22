@@ -7,7 +7,14 @@ const prisma = new PrismaClient();
 export class CropService {
   async getAllCrops(filters: CropFilters): Promise<PaginatedResponse<Crop>> {
     try {
-      const { search, page = 0, pageSize = 10, sortDirection = 'asc', sortKey } = filters;
+      // Ensure filters has default values if properties are missing
+      const { 
+        search, 
+        page = 0, 
+        pageSize = 10, 
+        sortDirection = 'asc', 
+        sortKey = 'name' 
+      } = filters || {};
 
       const where = search
         ? {
@@ -23,7 +30,7 @@ export class CropService {
           where,
           take: pageSize,
           skip: page * pageSize,
-          orderBy: { [sortKey || 'name']: sortDirection as 'asc' | 'desc' },
+          orderBy: { [sortKey]: sortDirection as 'asc' | 'desc' },
           select: {
             id: true,
             name: true,

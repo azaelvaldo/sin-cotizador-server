@@ -19,7 +19,13 @@ export type GeoJSONMultiPolygon = {
   coordinates: number[][][][];
 };
 
-export type Geofence = GeoJSONPolygon | GeoJSONMultiPolygon;
+export type GeoJSONGeometry = GeoJSONPolygon | GeoJSONMultiPolygon;
+
+export type Geofence = {
+  type: 'Feature';
+  properties?: Record<string, any>;
+  geometry: GeoJSONGeometry;
+};
 
 // Extended quotation types with relations
 export type QuotationWithRelations = Quotation & {

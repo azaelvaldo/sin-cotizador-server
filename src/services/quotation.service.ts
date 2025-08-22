@@ -69,7 +69,7 @@ export class QuotationService {
     }
   }
 
-  async getQuotationById(id: number): Promise<QuotationWithRelations | null> {
+  async getQuotationById(id: string): Promise<QuotationWithRelations | null> {
     try {
       const quotation = await prisma.quotation.findUnique({
         where: { id },
@@ -107,20 +107,21 @@ export class QuotationService {
     filters: QuotationFilters
   ): Promise<PaginatedResponse<QuotationWithRelations>> {
     try {
+      // Ensure filters has default values if properties are missing
       const {
         search,
         page = 0,
         pageSize = 10,
         sortDirection = 'asc',
-        sortKey,
+        sortKey = 'createdAt',
         cropId,
         stateId,
         createdBy,
         status,
         dateRange,
-      } = filters;
+      } = filters || {};
 
-      const where: any = {};
+      const where: any = {}
 
       if (search) {
         where.clientName = {
@@ -154,6 +155,8 @@ export class QuotationService {
           where.createdAt.lte = dateRange.end;
         }
       }
+
+      console.log('Final where clause:', where);
 
       const [quotations, total] = await Promise.all([
         prisma.quotation.findMany({

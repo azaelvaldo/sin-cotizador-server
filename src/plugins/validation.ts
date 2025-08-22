@@ -64,24 +64,38 @@ export function validateWithZod<T = any>(
 export function createValidationMiddleware(validationOptions: ValidationOptions) {
   return async (request: Hapi.Request, h: Hapi.ResponseToolkit) => {
     const errors: ValidationError[] = [];
+    const validatedData: any = {};
+
+    console.log('Validation middleware - Options:', validationOptions);
+    console.log('Validation middleware - Raw query:', request.query);
 
     // Validate payload
     if (validationOptions.payload && request.payload) {
       const payloadValidation = validateWithZod(
         validationOptions.payload,
-        request.payload,
+        validationOptions.payload,
         'payload'
       );
       if (!payloadValidation.success) {
         errors.push(...payloadValidation.errors);
+      } else {
+        validatedData.payload = payloadValidation.data;
       }
     }
 
     // Validate query parameters
-    if (validationOptions.query && request.query) {
-      const queryValidation = validateWithZod(validationOptions.query, request.query, 'query');
+    if (validationOptions.query) {
+      // Always validate query, even if empty
+      const queryData = request.query || {};
+      console.log('Validation middleware - Query data to validate:', queryData);
+      
+      const queryValidation = validateWithZod(validationOptions.query, queryData, 'query');
+      console.log('Validation middleware - Query validation result:', queryValidation);
+      
       if (!queryValidation.success) {
         errors.push(...queryValidation.errors);
+      } else {
+        validatedData.query = queryValidation.data;
       }
     }
 
@@ -90,8 +104,13 @@ export function createValidationMiddleware(validationOptions: ValidationOptions)
       const paramsValidation = validateWithZod(validationOptions.params, request.params, 'params');
       if (!paramsValidation.success) {
         errors.push(...paramsValidation.errors);
+      } else {
+        validatedData.params = paramsValidation.data;
       }
     }
+
+    console.log('Validation middleware - Errors found:', errors);
+    console.log('Validation middleware - Validated data:', validatedData);
 
     // If there are validation errors, return error response
     if (errors.length > 0) {
@@ -106,6 +125,10 @@ export function createValidationMiddleware(validationOptions: ValidationOptions)
         })
         .code(400);
     }
+
+    // Store validated data in request.app for route handlers to access
+    (request.app as any).validation = validatedData;
+    console.log('Validation middleware - Stored in request.app:', (request.app as any).validation);
 
     // Continue to next handler
     return h.continue;

@@ -16,8 +16,12 @@ const multiPolygonSchema = z.object({
   coordinates: z.array(z.array(z.array(coordinateSchema))).min(1),
 });
 
-// Geofence schema (Polygon or MultiPolygon)
-const geofenceSchema = z.union([polygonSchema, multiPolygonSchema]);
+// Geofence schema (GeoJSON Feature with Polygon or MultiPolygon geometry)
+const geofenceSchema = z.object({
+  type: z.literal('Feature'),
+  properties: z.record(z.string(), z.any()).optional(),
+  geometry: z.union([polygonSchema, multiPolygonSchema]),
+});
 
 // Create quotation schema
 export const createQuotationRequestSchema = z.object({
@@ -31,8 +35,8 @@ export const createQuotationRequestSchema = z.object({
 });
 
 const quotationSpecificFiltersSchema = z.object({
-  cropId: z.number().int().positive('Invalid crop ID').optional(),
-  stateId: z.number().int().positive('Invalid state ID').optional(),
+  cropId: z.coerce.number().int().positive('Invalid crop ID').optional(),
+  stateId: z.coerce.number().int().positive('Invalid state ID').optional(),
   createdBy: z.string().uuid('Invalid user ID').optional(),
   status: z.string().optional(),
   dateRange: z
@@ -41,7 +45,7 @@ const quotationSpecificFiltersSchema = z.object({
       end: z.string().datetime('Invalid end date').optional(),
     })
     .optional(),
-  insuredAmount: z.number().positive('Insured amount must be positive').optional(),
+  insuredAmount: z.coerce.number().positive('Insured amount must be positive').optional(),
 });
 
 export const quotationFiltersSchema = baseQuerySchema.and(quotationSpecificFiltersSchema);

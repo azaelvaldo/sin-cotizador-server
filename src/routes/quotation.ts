@@ -38,7 +38,7 @@ export const quotationRoutes = [
     path: '/quotations',
     options: {
       auth: {
-        scope: ['ADMIN'],
+        scope: ['ADMIN', 'USER'],
       },
       pre: [
         {
@@ -48,7 +48,20 @@ export const quotationRoutes = [
       ],
     },
     handler: async (req: Hapi.Request, h: Hapi.ResponseToolkit) => {
-      const filters = req.query as QuotationFilters;
+      // Use the validated and coerced data from the validation middleware
+      const filters = (req.app as any).validation?.query || {};
+      const { userId, role } = req.auth.credentials as { userId: string; role: string };
+
+      // Debug logging
+      console.log('Route handler - Raw query:', req.query);
+      console.log('Route handler - Validated filters:', filters);
+      console.log('Route handler - Validation object:', (req.app as any).validation);
+
+      // If user is not admin, they can only see their own quotations
+      if (role !== 'ADMIN') {
+        filters.createdBy = userId;
+      }
+
       const result = await quotationService.getAllQuotations(filters);
       return result;
     },
@@ -56,17 +69,12 @@ export const quotationRoutes = [
 
   {
     method: 'GET' as const,
-    path: '/quotation-requests/{id}',
+    path: '/quotations/{id}',
 
     handler: async (req: Hapi.Request, h: Hapi.ResponseToolkit) => {
       const { id } = req.params as { id: string };
-      const quotationId = parseInt(id, 10);
 
-      if (isNaN(quotationId)) {
-        return h.response({ message: 'Invalid quotation ID' }).code(400);
-      }
-
-      const quotation = await quotationService.getQuotationById(quotationId);
+      const quotation = await quotationService.getQuotationById(id);
       if (!quotation) {
         return h.response({ message: 'Quotation not found' }).code(404);
       }

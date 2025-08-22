@@ -8,7 +8,14 @@ const prisma = new PrismaClient();
 export class StateService {
   async getAllStates(filters: StateFilters): Promise<PaginatedResponse<State>> {
     try {
-      const { search, page = 0, pageSize = 10, sortDirection = 'asc', sortKey } = filters;
+      // Ensure filters has default values if properties are missing
+      const { 
+        search, 
+        page = 0, 
+        pageSize = 10, 
+        sortDirection = 'asc', 
+        sortKey = 'name' 
+      } = filters || {};
 
       const where = search
         ? {
@@ -24,7 +31,7 @@ export class StateService {
           where,
           take: pageSize,
           skip: page * pageSize,
-          orderBy: { [sortKey || 'name']: sortDirection as 'asc' | 'desc' },
+          orderBy: { [sortKey]: sortDirection as 'asc' | 'desc' },
           select: {
             id: true,
             name: true,

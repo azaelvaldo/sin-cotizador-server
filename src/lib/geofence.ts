@@ -11,6 +11,12 @@ interface GeoJSONMultiPolygon {
   coordinates: number[][][][];
 }
 
+interface GeoJSONFeature {
+  type: 'Feature';
+  properties?: Record<string, any>;
+  geometry: GeoJSONPolygon | GeoJSONMultiPolygon;
+}
+
 export interface GeofenceValidationResult {
   isValid: boolean;
   errors: string[];
@@ -24,41 +30,53 @@ export interface GeofenceAreaConstraints {
 
 /**
  * Validate geofence and calculate area
- * @param geofence - GeoJSON Polygon or MultiPolygon
+ * @param geofence - GeoJSON Feature with Polygon or MultiPolygon geometry
  * @param constraints - Optional area constraints (default: 1-1000 hectares)
  * @returns Validation result with calculated area and any errors
  */
 export function validateGeofence(
-  geofence: GeoJSONPolygon | GeoJSONMultiPolygon,
+  geofence: GeoJSONFeature,
   constraints: GeofenceAreaConstraints = {}
 ): GeofenceValidationResult {
   const { minHectares = 1, maxHectares = 1000 } = constraints;
   const errors: string[] = [];
 
   try {
-    // Validate GeoJSON structure
-    if (!geofence || !geofence.type || !geofence.coordinates) {
-      errors.push('Invalid geofence structure');
+    // Validate GeoJSON Feature structure
+    if (!geofence || !geofence.type || !geofence.geometry) {
+      errors.push('Estructura de geocerca inválida: debe ser un GeoJSON Feature');
       return { isValid: false, errors };
     }
 
-    if (geofence.type !== 'Polygon' && geofence.type !== 'MultiPolygon') {
-      errors.push('Geofence must be a Polygon or MultiPolygon');
+    if (geofence.type !== 'Feature') {
+      errors.push('La geocerca debe ser un GeoJSON Feature');
+      return { isValid: false, errors };
+    }
+
+    const geometry = geofence.geometry;
+
+    if (!geometry || !geometry.type || !geometry.coordinates) {
+      errors.push('Estructura de geometría inválida en el GeoJSON Feature');
+      return { isValid: false, errors };
+    }
+
+    if (geometry.type !== 'Polygon' && geometry.type !== 'MultiPolygon') {
+      errors.push('La geometría debe ser un Polígono o MultiPolígono');
       return { isValid: false, errors };
     }
 
     // Create Turf polygon for area calculation
     let polygon: any;
 
-    if (geofence.type === 'Polygon') {
-      polygon = turf.polygon(geofence.coordinates);
+    if (geometry.type === 'Polygon') {
+      polygon = turf.polygon(geometry.coordinates);
     } else {
-      polygon = turf.multiPolygon(geofence.coordinates);
+      polygon = turf.multiPolygon(geometry.coordinates);
     }
 
     // Validate polygon geometry
     if (!turf.booleanValid(polygon)) {
-      errors.push('Invalid polygon geometry');
+      errors.push('Geometría de polígono inválida');
       return { isValid: false, errors };
     }
 
@@ -71,14 +89,14 @@ export function validateGeofence(
     // Validate area constraints
     if (areaInHectares < minHectares) {
       errors.push(
-        `Geofence area (${areaInHectares.toFixed(2)} ha) must be at least ${minHectares} hectare${minHectares > 1 ? 's' : ''}`
+        `El área de la geocerca (${areaInHectares.toFixed(2)} ha) debe ser al menos ${minHectares} hectárea${minHectares > 1 ? 's' : ''}`
       );
       return { isValid: false, errors, calculatedArea: areaInHectares };
     }
 
     if (areaInHectares > maxHectares) {
       errors.push(
-        `Geofence area (${areaInHectares.toFixed(2)} ha) cannot exceed ${maxHectares} hectares`
+        `El área de la geocerca (${areaInHectares.toFixed(2)} ha) no puede exceder ${maxHectares} hectáreas`
       );
       return { isValid: false, errors, calculatedArea: areaInHectares };
     }
@@ -90,7 +108,7 @@ export function validateGeofence(
     };
   } catch (error) {
     errors.push(
-      `Geofence validation error: ${error instanceof Error ? error.message : 'Unknown error'}`
+      `Error de validación de geocerca: ${error instanceof Error ? error.message : 'Error desconocido'}`
     );
     return { isValid: false, errors };
   }
@@ -98,39 +116,42 @@ export function validateGeofence(
 
 /**
  * Calculate area of geofence without validation
- * @param geofence - GeoJSON Polygon or MultiPolygon
+ * @param geofence - GeoJSON Feature with Polygon or MultiPolygon geometry
  * @returns Area in hectares
  */
-export function calculateGeofenceArea(geofence: GeoJSONPolygon | GeoJSONMultiPolygon): number {
+export function calculateGeofenceArea(geofence: GeoJSONFeature): number {
   try {
+    const geometry = geofence.geometry;
     let polygon: any;
 
-    if (geofence.type === 'Polygon') {
-      polygon = turf.polygon(geofence.coordinates);
+    if (geometry.type === 'Polygon') {
+      polygon = turf.polygon(geometry.coordinates);
     } else {
-      polygon = turf.multiPolygon(geofence.coordinates);
+      polygon = turf.multiPolygon(geometry.coordinates);
     }
 
     const areaInSquareMeters = turf.area(polygon);
     return areaInSquareMeters / 10000; // Convert to hectares
   } catch (error) {
     throw new Error(
-      `Failed to calculate geofence area: ${error instanceof Error ? error.message : 'Unknown error'}`
+      `Error al calcular el área de la geocerca: ${error instanceof Error ? error.message : 'Error desconocido'}`
     );
   }
 }
 
 /**
- * Check if geofence is valid GeoJSON structure
+ * Check if geofence is valid GeoJSON Feature structure
  * @param geofence - Any object to validate
- * @returns True if valid GeoJSON Polygon or MultiPolygon
+ * @returns True if valid GeoJSON Feature with Polygon or MultiPolygon geometry
  */
 export function isValidGeofenceStructure(geofence: any): boolean {
   return (
     geofence &&
     typeof geofence === 'object' &&
-    (geofence.type === 'Polygon' || geofence.type === 'MultiPolygon') &&
-    Array.isArray(geofence.coordinates) &&
-    geofence.coordinates.length > 0
+    geofence.type === 'Feature' &&
+    geofence.geometry &&
+    (geofence.geometry.type === 'Polygon' || geofence.geometry.type === 'MultiPolygon') &&
+    Array.isArray(geofence.geometry.coordinates) &&
+    geofence.geometry.coordinates.length > 0
   );
 }
