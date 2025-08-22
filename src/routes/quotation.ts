@@ -12,6 +12,9 @@ export const quotationRoutes = [
     method: 'POST' as const,
     path: '/quotations',
     options: {
+      auth: {
+        scope: ['ADMIN', 'USER'],
+      },
       pre: [
         {
           method: createValidationMiddleware({ payload: createQuotationRequestSchema }),
@@ -52,11 +55,6 @@ export const quotationRoutes = [
       const filters = (req.app as any).validation?.query || {};
       const { userId, role } = req.auth.credentials as { userId: string; role: string };
 
-      // Debug logging
-      console.log('Route handler - Raw query:', req.query);
-      console.log('Route handler - Validated filters:', filters);
-      console.log('Route handler - Validation object:', (req.app as any).validation);
-
       // If user is not admin, they can only see their own quotations
       if (role !== 'ADMIN') {
         filters.createdBy = userId;
@@ -70,7 +68,11 @@ export const quotationRoutes = [
   {
     method: 'GET' as const,
     path: '/quotations/{id}',
-
+    options: {
+      auth: {
+        scope: ['ADMIN', 'USER'],
+      },
+    },
     handler: async (req: Hapi.Request, h: Hapi.ResponseToolkit) => {
       const { id } = req.params as { id: string };
 

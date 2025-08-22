@@ -29,6 +29,7 @@ export const createQuotationRequestSchema = z.object({
   cropId: z.number().int().positive('Invalid crop ID'),
   stateId: z.number().int().positive('Invalid state ID'),
   insuredAmount: z.number().positive('Insured amount must be positive'),
+  insuredArea: z.number().positive('Insured area must be positive'),
   validityStart: z.string().datetime('Invalid validity start date'),
   validityEnd: z.string().datetime('Invalid validity end date'),
   geofence: geofenceSchema,

@@ -6,6 +6,7 @@ import {
   QuotationFilters,
 } from '../types/quotation.types.js';
 import { PaginatedResponse } from '../types/common.types.js';
+import { rabbitMQService } from './rabbitmq.service.js';
 
 const prisma = new PrismaClient();
 
@@ -61,6 +62,14 @@ export class QuotationService {
           },
         },
       });
+
+      // Send RabbitMQ alert for the new quotation
+      try {
+        await rabbitMQService.sendQuotationAlert(quotation as QuotationWithRelations);
+      } catch (alertError) {
+        console.error('Warning: Failed to send RabbitMQ alert:', alertError);
+        // Don't fail the quotation creation if alert fails
+      }
 
       return quotation as QuotationWithRelations;
     } catch (error) {
@@ -155,8 +164,6 @@ export class QuotationService {
           where.createdAt.lte = dateRange.end;
         }
       }
-
-      console.log('Final where clause:', where);
 
       const [quotations, total] = await Promise.all([
         prisma.quotation.findMany({
