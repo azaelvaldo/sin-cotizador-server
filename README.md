@@ -121,7 +121,6 @@ npm run seed             # Datos iniciales
 
 ### **Performance & Escalabilidad**
 - **Redis Cache**: Cachear consultas frecuentes (estados, cultivos, usuarios)
-- **Connection Pooling**: Optimizar conexiones a PostgreSQL
 - **Indexación**: Agregar índices en campos de búsqueda y filtrado
 
 ### **Testing**
