@@ -14,11 +14,11 @@ export class RabbitMQService {
   async initialize() {
     try {
       // Connect to RabbitMQ
-      this.connection = await amqp.connect(this.RABBIT_URL) as amqp.Connection;
+      this.connection = await amqp.connect(this.RABBIT_URL) as unknown as amqp.Connection;
       console.log('✅ Connected to RabbitMQ');
 
       // Create channel
-      this.channel = await this.connection.createChannel();
+      this.channel = await (this.connection as any).createChannel() as unknown as amqp.Channel;
       console.log('✅ RabbitMQ channel created');
 
       // Assert exchange for quotation events

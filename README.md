@@ -1,286 +1,142 @@
 # Cotizador Server
 
-Servidor backend para sistema de cotizaciones de seguros agrícolas con validación de geocercas y notificaciones en tiempo real.
+Backend para sistema de cotizaciones agrícolas con validación de geocercas y notificaciones en tiempo real.
 
-## 🚀 Stack Tecnológico
+## �� Stack
 
-### **Backend Framework**
-- **Hapi.js** - Framework web para Node.js
-- **TypeScript** - Tipado estático para JavaScript
-- **Node.js** - Runtime de JavaScript
-
-### **Base de Datos**
-- **PostgreSQL** - Base de datos relacional
-- **Prisma** - ORM moderno para TypeScript/Node.js
-- **Docker** - Contenedorización de servicios
-
-### **Autenticación & Seguridad**
-- **JWT (@hapi/jwt)** - JSON Web Tokens para autenticación
-- **bcrypt** - Hashing de contraseñas
-- **CORS** - Cross-Origin Resource Sharing
-
-### **Validación & Serialización**
-- **Zod** - Validación de esquemas en runtime
-- **Hapi Validation Plugin** - Middleware de validación personalizado
-
-### **Mensajería & Notificaciones**
-- **RabbitMQ** - Sistema de mensajería asíncrona
-- **WebSocket (ws)** - Comunicación en tiempo real
-- **AMQP** - Protocolo de mensajería
-
-### **Geolocalización**
-- **Turf.js** - Análisis geoespacial y cálculo de áreas
-- **GeoJSON** - Formato estándar para datos geográficos
-
-### **Herramientas de Desarrollo**
-- **ESLint** - Linting de código
-- **Docker Compose** - Orquestación de contenedores
-- **Adminer** - Interfaz web para PostgreSQL
+- **Backend**: Hapi.js + TypeScript + Node.js
+- **Database**: PostgreSQL + Prisma + Docker
+- **Auth**: JWT + bcrypt
+- **Validation**: Zod + custom Hapi plugin
+- **Messaging**: RabbitMQ + WebSocket
+- **Geolocation**: Turf.js + GeoJSON
 
 ## 📋 Prerrequisitos
 
-- **Node.js** 18+ 
-- **Docker** y **Docker Compose**
-- **npm** o **yarn**
+- Node.js 18+
+- Docker + Docker Compose
+- npm
 
-## 🛠️ Instalación y Configuración
+## ��️ Setup Rápido
 
-### 1. **Clonar el repositorio**
+### 1. **Configurar entorno**
 ```bash
-git clone <repository-url>
+git clone <repo>
 cd cotizador-server
-```
-
-### 2. **Configurar variables de entorno**
-```bash
-# Crear archivo .env
 cp .env.example .env
-
 # Editar .env con tus valores
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/hapi_db"
-JWT_SECRET="tu_jwt_secret_super_seguro"
-JWT_AUDIENCE="cotizador-app"
-JWT_ISSUER="cotizador-server"
-RABBITMQ_URL="amqp://admin:admin@localhost:5672"
-PORT=4000
 ```
 
-### 3. **Levantar servicios con Docker**
+### 2. **Levantar servicios**
 ```bash
-# Levantar PostgreSQL y RabbitMQ
 docker compose up -d
-
-# Verificar que los servicios estén corriendo
-docker compose ps
-```
-
-**Servicios disponibles:**
-- **PostgreSQL**: `localhost:5432`
-- **RabbitMQ**: `localhost:5672` (AMQP), `localhost:15672` (Web UI)
-- **Adminer**: `localhost:8080` (Gestión de BD)
-
-### 4. **Instalar dependencias**
-```bash
 npm install
 ```
 
-### 5. **Configurar Prisma**
+### 3. **Configurar base de datos**
 ```bash
-# Generar cliente de Prisma
 npm run prisma:generate
-
-# Aplicar migraciones
 npm run prisma:migrate
-
-# Ver estado de la base de datos
-npm run prisma:studio
-```
-
-### 6. **Poblar base de datos**
-```bash
-# Ejecutar seed con datos iniciales
 npm run seed
 ```
 
-**Datos creados:**
-- Usuario admin: `admin@example.com` / `admin123`
-- Usuario regular: `user@example.com` / `user123`
-- Estados y cultivos de ejemplo
-
-## 🚀 Ejecutar el Proyecto
-
-### **Primera vez (desarrollo)**
+### 4. **Ejecutar**
 ```bash
-# 1. Asegurar que Docker esté corriendo
-docker compose up -d
-
-# 2. Instalar dependencias
-npm install
-
-# 3. Generar cliente Prisma
-npm run prisma:generate
-
-# 4. Aplicar migraciones
-npm run prisma:migrate
-
-# 5. Poblar datos
-npm run seed
-
-# 6. Iniciar servidor
 npm run dev
+
+o
+
+npm run build
+npm start
 ```
 
-### **Ejecuciones posteriores**
-```bash
-# Solo levantar servicios si no están corriendo
-docker compose up -d
+## 🌐 API Endpoints
 
-# Iniciar servidor
-npm run dev
-```
+| Método | Ruta | Descripción | Auth |
+|--------|------|-------------|------|
+| POST | `/auth/login` | Login | ❌ |
+| POST | `/auth/logout` | Logout | ❌ |
+| GET | `/me` | Perfil usuario | ✅ |
+| GET | `/states` | Listar estados | ✅ |
+| GET | `/crops` | Listar cultivos | ✅ |
+| POST | `/quotations` | Crear cotización | ✅ |
+| GET | `/quotations` | Listar cotizaciones | ✅ |
+| GET | `/quotations/{id}` | Obtener cotización | ✅ |
 
-### **Comandos disponibles**
-```bash
-npm run dev          # Inicia servidor en modo desarrollo
-npm run build        # Compila TypeScript
-npm run start        # Ejecuta versión compilada
-npm run prisma:generate  # Genera cliente Prisma
-npm run prisma:migrate   # Aplica migraciones
-npm run prisma:studio    # Abre interfaz web de Prisma
-npm run seed             # Pobla base de datos
-```
+## �� WebSocket
 
-## 🌐 Endpoints de la API
+**Conexión**: `ws://localhost:4001`
 
-### **Autenticación**
-- `POST /auth/login` - Iniciar sesión
-- `POST /auth/logout` - Cerrar sesión
-
-### **Usuarios**
-- `GET /me` - Obtener perfil del usuario autenticado
-
-### **Estados**
-- `GET /states` - Listar estados (con paginación y filtros)
-
-### **Cultivos**
-- `GET /crops` - Listar cultivos (con paginación y filtros)
-
-### **Cotizaciones**
-- `POST /quotations` - Crear cotización
-- `GET /quotations` - Listar cotizaciones (con filtros)
-- `GET /quotations/{id}` - Obtener cotización específica
-
-## 🔌 WebSocket y Notificaciones
-
-### **Conexión WebSocket**
+**Ejemplo de uso**:
 ```javascript
 const ws = new WebSocket("ws://localhost:4001");
-
 ws.onmessage = (event) => {
   const data = JSON.parse(event.data);
   console.log(data.text); // Mensaje de notificación
 };
 ```
 
-### **Tipos de Notificaciones**
-- **Alerta de área alta**: Cotizaciones con >500 hectáreas
-- **Notificación regular**: Todas las cotizaciones creadas
+**Tipos de mensajes**:
+- `HIGH_AREA_ALERT`: Cotizaciones >500 hectáreas
+- `QUOTATION_CREATED`: Todas las cotizaciones
 
-### **Estructura de Mensajes**
-```json
-{
-  "type": "HIGH_AREA_ALERT",
-  "text": "⚠️ Se ha registrado una solicitud de cotización con 750.50 hectáreas aseguradas",
-  "quotationId": 1,
-  "clientName": "Estancia San Miguel",
-  "insuredArea": 750.50,
-  "insuredAmount": 85000
-}
-```
+## ��️ Base de Datos
 
-## 🗄️ Estructura de la Base de Datos
+**Modelos**: User, UserPassword, Quotation, Crop, State
 
-### **Modelos principales**
-- **User** - Usuarios del sistema (ADMIN/USER)
-- **UserPassword** - Contraseñas hasheadas
-- **Quotation** - Solicitudes de cotización
-- **Crop** - Cultivos disponibles
-- **State** - Estados/regiones
+**Relaciones**: User ↔ Quotation (1:N), Quotation ↔ Crop/State (N:1)
 
-### **Relaciones**
-- User ↔ UserPassword (1:1)
-- User ↔ Quotation (1:N)
-- Quotation ↔ Crop (N:1)
-- Quotation ↔ State (N:1)
+## 🔧 Comandos Útiles
 
-## 🔧 Desarrollo
-
-### **Estructura del proyecto**
-```
-src/
-├── lib/           # Utilidades (hash, geofence)
-├── plugins/       # Plugins de Hapi (auth, validation)
-├── routes/        # Definición de endpoints
-├── schemas/       # Esquemas de validación Zod
-├── services/      # Lógica de negocio
-├── types/         # Tipos TypeScript
-└── server.ts      # Punto de entrada
-```
-
-### **Validación de datos**
-- **Zod** para validación de payloads y queries
-- **Middleware personalizado** para integración con Hapi
-- **Coerción automática** de tipos (string → number)
-
-### **Autenticación**
-- **JWT** en header Authorization: Bearer
-- **Scope-based access control** (ADMIN/USER)
-- **Protección automática** de rutas
-
-## 🐛 Troubleshooting
-
-### **Problemas comunes**
-
-**1. Error de conexión a PostgreSQL**
 ```bash
-# Verificar que Docker esté corriendo
-docker compose ps
-
-# Reiniciar servicios
-docker compose restart db
+npm run dev              # Desarrollo
+npm run build            # Compilar
+npm run prisma:studio    # Ver BD
+npm run prisma:migrate   # Migraciones
+npm run seed             # Datos iniciales
 ```
 
-**2. Error de migración Prisma**
-```bash
-# Resetear base de datos
-npm run prisma:migrate:reset
+## �� Troubleshooting
 
-# Aplicar migraciones desde cero
-npm run prisma:migrate
-```
+| Problema | Solución |
+|----------|----------|
+| Error PostgreSQL | `docker compose restart db` |
+| Error migración | `npm run prisma:migrate:reset` |
+| Error RabbitMQ | `docker compose restart rabbitmq` |
 
-**3. Error de RabbitMQ**
-```bash
-# Verificar estado del servicio
-docker compose logs rabbitmq
+## 📝 Notas
 
-# Reiniciar RabbitMQ
-docker compose restart rabbitmq
-```
+- **Puerto servidor**: 4000
+- **Puerto WebSocket**: 4001
+- **Auth automático**: Todas las rutas protegidas excepto login/logout
+- **Coerción automática**: Query params string → number
+- **Reconexión automática**: RabbitMQ
 
-**4. Error de validación**
-```bash
-# Verificar esquemas Zod
-npm run build
+## 🚀 Áreas de Mejora
 
-# Revisar logs del servidor
-npm run dev
-```
+### **Seguridad**
+- **Cookies seguras**: Implementar `httpOnly`, `secure`, `sameSite` para producción
+- **Rate limiting**: Proteger endpoints contra ataques de fuerza bruta
+- **CORS restrictivo**: Limitar orígenes permitidos en producción
 
-## 📝 Notas de Desarrollo
+### **Performance & Escalabilidad**
+- **Redis Cache**: Cachear consultas frecuentes (estados, cultivos, usuarios)
+- **Connection Pooling**: Optimizar conexiones a PostgreSQL
+- **Indexación**: Agregar índices en campos de búsqueda y filtrado
 
-- **Puerto del servidor**: 4000 (configurable en .env)
-- **Puerto WebSocket**: 4001 (separado del servidor HTTP)
-- **Validación automática**: Todas las rutas están protegidas por defect excepto login y logout
-- **Coerción de tipos**: Los query parameters se convierten automáticamente
-- **Reconexión automática**: RabbitMQ se reconecta automáticamente
+### **Testing**
+- **Unit tests**: Jest para servicios y utilidades
+- **Integration tests**: Tests de endpoints y base de datos
+- **E2E tests**: Tests completos del flujo de usuario
+- **Test coverage**: Mínimo 80% de cobertura
+- **Mocking**: Mocks para servicios externos (RabbitMQ, DB)
+
+### **API & Documentación**
+- **OpenAPI/Swagger**: Documentación automática de endpoints
+- **API versioning**: Versionado de endpoints para compatibilidad
+
+### **Autenticación & Autorización**
+- **OAuth 2.0**: Integración con proveedores externos
+- **Role-based access**: Sistema de permisos granular
+- **Session management**: Manejo de sesiones múltiples
+- **JWT refresh**: Tokens de refresco para mayor seguridad
