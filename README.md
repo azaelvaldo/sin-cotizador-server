@@ -128,14 +128,11 @@ npm run seed             # Datos iniciales
 - **Integration tests**: Tests de endpoints y base de datos
 - **E2E tests**: Tests completos del flujo de usuario
 - **Test coverage**: Mínimo 80% de cobertura
-- **Mocking**: Mocks para servicios externos (RabbitMQ, DB)
 
 ### **API & Documentación**
 - **OpenAPI/Swagger**: Documentación automática de endpoints
-- **API versioning**: Versionado de endpoints para compatibilidad
 
 ### **Autenticación & Autorización**
 - **OAuth 2.0**: Integración con proveedores externos
-- **Role-based access**: Sistema de permisos granular
 - **Session management**: Manejo de sesiones múltiples
 - **JWT refresh**: Tokens de refresco para mayor seguridad
